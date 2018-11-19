@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="refresh" content="30">      <!-- Refreshar sidan var 30:e sekund-->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="hallplats.css" />
+
+
+    <script>
+        function startTime() {              // script till klockan som visas överst på sidan
+            var today = new Date();         
+            var h = today.getHours();
+            var m = today.getMinutes();
+            var s = today.getSeconds();
+            m = checkTime(m);
+            s = checkTime(s);
+            document.getElementById('timme').innerHTML = h
+            document.getElementById('minut').innerHTML = m
+            document.getElementById('sekund').innerHTML = s
+
+            var t = setTimeout(startTime, 500);  
+        }
+        function checkTime(i) {
+            if (i < 10) { i = "0" + i };
+            return i;
+        }
+    </script>
+
+
+
+
+
+
+</head>
+
+<body onload="startTime()">
+
+    <div class="flex-container">     <!-- Klockan i en flex-->
+        <div id="timme"></div>
+        <div id="minut"></div>
+        <div id="sekund"></div>
+
+    </div>
+
+
+    <div class="header">
+        <h1>Hållplats: Slussen</h1>
+        <button type="submit" onClick="refreshPage()">Uppdatera resor</button> <br><br>   <!-- Knappen som refreshar sidan-->
+    </div>
+    <div id="container">
+
+
+
+
+    </div>
+
+
+
+    <script>
+        function refreshPage() {
+            window.location.reload();   // scriptet till tidtabellen
+        }
+
+
+
+
+
+        function createNode(element) {
+            return document.createElement(element);
+        }
+
+        function append(parent, el) {
+            return parent.appendChild(el);
+        }
+
+        const ul = document.getElementById('container');
+        const url = 'https://cors-anywhere.herokuapp.com/http://api.sl.se/api2/realtimedeparturesV4.json?key=c287e672dec54286aba5436dfc5ff238&siteid=9192&timewindow=10';
+        fetch(url)
+            .then((resp) => resp.json())
+            .then(function (data) {
+                let departures = data.ResponseData.Metros;
+                return departures.map(function (departure) {
+                    let li = createNode('li'),
+                        span = createNode('span');
+
+                    var walkingtime = 3;
+                    if (departure.DisplayTime == "Nu") {    // Tar bort 3 minuter från tidtabellen för att
+                        departure.DisplayTime = "0 min";    // räkna in gångtid
+                    }
+                    var dt = departure.DisplayTime.replace(" min", "");
+                    dt = dt - walkingtime;
+                    if (dt > 0) {                           // visas om tiden är större än 0 min
+                        span.innerHTML += `${departure.LineNumber+ "       " +departure.GroupOfLine + ":"  + dt + " min" + "     " + departure.Destination}` + "<br>" + "<br>";     // Skriver ut vad som står på sidan
+
+                        append(li, span);
+                        append(ul, li);
+
+                    }
+
+                })
+            })
+            .catch(function (error) {
+                console.log(error);
+            }); 
+    </script>
+
+
+
+
+</body>
+
+</html>
